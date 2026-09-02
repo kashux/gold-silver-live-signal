@@ -115,7 +115,7 @@
 
   <div class="card">
     <div class="section-title">What's driving today's sentiment read</div>
-    <ul class="headlines" id="headlinesList"><li class="loading">Loading current market headlines&hellip;</li></ul>
+    <div class="bars" id="componentsList"><div class="loading">Loading component breakdown&hellip;</div></div>
   </div>
 
   <div class="card footer-text">
@@ -194,7 +194,7 @@ async function loadAll() {
   }
 
   // --- 2. VIX + headlines (best effort; degrade gracefully if unavailable) ---
-  let vix = null, headlines = [];
+  let vix = null, components = [];
   let debugInfo = {};
   try {
     const fg = await fetchJSON('https://feargreedchart.com/api/?action=regime');
@@ -207,19 +207,13 @@ async function loadAll() {
   try {
     const sc = await fetchJSON('https://feargreedchart.com/api/?action=all');
     debugInfo.all_response = sc;
-    if (sc && Array.isArray(sc.headlines)) headlines = sc.headlines.slice(0, 5);
-    else if (sc && Array.isArray(sc.news)) headlines = sc.news.slice(0, 5);
     if (vix === null && sc && sc.current && typeof sc.current.vix === 'number') vix = sc.current.vix;
-    if (vix === null && sc && sc.score && Array.isArray(sc.score.components)) {
-      const volComp = sc.score.components.find(c => c.name === 'VOLATILITY');
-      if (volComp && volComp.raw) {
-        const m = /VIX\s*([\d.]+)/.exec(volComp.raw);
-        if (m) vix = parseFloat(m[1]);
-      }
+    if (sc && sc.score && Array.isArray(sc.score.components)) {
+      components = sc.score.components;
     }
   } catch (e) {
     debugInfo.all_error = e.message;
-    warnings.push('Live headline feed unavailable right now.');
+    warnings.push('Live sentiment breakdown unavailable right now.');
   }
   document.getElementById('debugBox').textContent = JSON.stringify(debugInfo, null, 2);
 
@@ -300,17 +294,24 @@ async function loadAll() {
     });
   });
 
-  // --- Headlines ---
-  const hEl = document.getElementById('headlinesList');
-  hEl.innerHTML = '';
-  if (headlines.length) {
-    headlines.forEach(h => {
-      const li = document.createElement('li');
-      li.innerHTML = `${h.title || h.headline || h}<div class="src">${h.source || ''}</div>`;
-      hEl.appendChild(li);
+  // --- Component breakdown (replaces headlines, which this API doesn't provide) ---
+  const cEl = document.getElementById('componentsList');
+  cEl.innerHTML = '';
+  if (components.length) {
+    components.forEach(c => {
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      row.innerHTML = `<div class="name">${c.name}</div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:${c.val}%; opacity:0.8"></div></div>
+        <div class="bar-val">${c.val}/100</div>`;
+      cEl.appendChild(row);
+      const sub = document.createElement('div');
+      sub.style.cssText = 'font-size:11px;color:var(--muted);margin:-2px 0 8px 108px;';
+      sub.textContent = c.desc + ': ' + c.raw;
+      cEl.appendChild(sub);
     });
   } else {
-    hEl.innerHTML = '<li class="loading">No live headline feed available right now \u2014 leans above are based on price/regime data only.</li>';
+    cEl.innerHTML = '<div class="reason">Live sentiment breakdown unavailable right now.</div>';
   }
 
   // --- Warnings + timestamp ---
