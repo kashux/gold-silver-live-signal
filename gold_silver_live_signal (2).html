@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gold &amp; Silver — Live Geopolitical Risk Signal</title>
+<style>
+  :root {
+    --bg: #17140f;
+    --panel: #201b14;
+    --panel-2: #241f17;
+    --ink: #f1ead9;
+    --muted: #a89f8c;
+    --gold: #c9a227;
+    --gold-bright: #e8c34a;
+    --silver: #b7b7ae;
+    --border: #35291d;
+    --pos-bg: #16241d; --pos-ink: #7bc9a0; --pos-border: #274b39;
+    --neu-bg: #24211a; --neu-ink: #c9c0aa; --neu-border: #3a3427;
+    --neg-bg: #261614; --neg-ink: #d98b7c; --neg-border: #4a2b26;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--ink);
+    font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
+    padding: 24px 16px 60px;
+  }
+  .wrap { max-width: 780px; margin: 0 auto; }
+  h1 {
+    font-family: Georgia, "Iowan Old Style", serif;
+    font-weight: 400; font-size: 26px; margin: 0 0 4px;
+  }
+  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: 12px; padding: 20px; margin-bottom: 16px;
+  }
+  .row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .stat { flex: 1; min-width: 140px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 6px; }
+  .stat .value { font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace; font-size: 20px; color: var(--gold-bright); }
+  .stat .value.silver { color: var(--silver); }
+  .stat .delta { font-size: 12px; color: var(--muted); margin-top: 4px; }
+  .refresh-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  button {
+    background: var(--gold); color: #1a1508; border: none; border-radius: 8px;
+    padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .updated { font-size: 12px; color: var(--muted); }
+  .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 0 0 12px; }
+  .lean-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  @media (max-width: 480px) { .lean-grid { grid-template-columns: 1fr; } }
+  .lean-card { border-radius: 10px; padding: 14px; border: 1px solid var(--border); background: var(--panel-2); }
+  .lean-card .metal { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 8px; }
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid; }
+  .badge.pos { background: var(--pos-bg); color: var(--pos-ink); border-color: var(--pos-border); }
+  .badge.neu { background: var(--neu-bg); color: var(--neu-ink); border-color: var(--neu-border); }
+  .badge.neg { background: var(--neg-bg); color: var(--neg-ink); border-color: var(--neg-border); }
+  .reason { font-size: 12.5px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+  .conf { font-size: 11px; color: var(--muted); margin-top: 8px; font-style: italic; }
+  .bars { margin-top: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
+  .bar-row .name { width: 100px; color: var(--muted); flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--panel-2); border-radius: 4px; height: 14px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; }
+  .bar-fill.gold { background: var(--gold); }
+  .bar-fill.silver { background: var(--silver); }
+  .bar-val { width: 46px; text-align: right; font-family: ui-monospace, monospace; color: var(--ink); }
+  .headlines { list-style: none; margin: 0; padding: 0; }
+  .headlines li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--ink); }
+  .headlines li:last-child { border-bottom: none; }
+  .headlines .src { color: var(--muted); font-size: 11px; }
+  .footer-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
+  .footer-text b { color: var(--ink); }
+  .warn { background: var(--neg-bg); border: 1px solid var(--neg-border); color: var(--neg-ink); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+  .loading { color: var(--muted); font-size: 13px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Gold &amp; silver: live geopolitical risk signal</h1>
+  <div class="subtitle">Historical-context tool, not a price prediction &mdash; backtested on monthly data, 1990&ndash;2026</div>
+
+  <div id="warnBanner" class="warn"></div>
+
+  <div class="refresh-row">
+    <span class="updated" id="updatedAt">Loading live data&hellip;</span>
+    <button id="refreshBtn" onclick="loadAll()">Refresh</button>
+  </div>
+
+  <div class="card">
+    <div class="row" id="statRow">
+      <div class="stat"><div class="label">Gold spot</div><div class="value" id="goldPrice">&mdash;</div></div>
+      <div class="stat"><div class="label">Silver spot</div><div class="value silver" id="silverPrice">&mdash;</div></div>
+      <div class="stat"><div class="label">Gold/Silver ratio</div><div class="value" id="ratioVal">&mdash;</div><div class="delta" id="ratioDelta"></div></div>
+      <div class="stat"><div class="label">Risk regime (VIX)</div><div class="value" id="regimeVal">&mdash;</div><div class="delta" id="vixVal"></div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Short-term read (tactical, driven by current risk regime &amp; recent momentum)</div>
+    <div class="lean-grid" id="shortTermGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Long-term read (positional, driven by gold/silver ratio vs. its historical norm)</div>
+    <div class="lean-grid" id="longTermGrid"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Historical return by risk regime (1990&ndash;2026 backtest, your current regime highlighted)</div>
+    <div class="bars" id="regimeBars"></div>
+  </div>
+
+  <div class="card">
+    <div class="section-title">What's driving today's sentiment read</div>
+    <ul class="headlines" id="headlinesList"><li class="loading">Loading current market headlines&hellip;</li></ul>
+  </div>
+
+  <div class="card footer-text">
+    <p><b>Data:</b> Gold/silver spot &amp; history from xaus.com (World Bank / market-sourced). VIX &amp; headlines from feargreedchart.com. Historical regime backtest: World Bank Commodity Markets + CBOE VIX, 1990&ndash;2026 (438 months), built independently for this project.</p>
+    <p><b>Explanatory power:</b> gold's monthly return has a statistically significant but small relationship with VIX changes (r&sup2; = 1.1%, p = 0.02); silver shows no statistically significant relationship (p = 0.91). Treat every lean below as a weak historical association, not a reliable trading signal.</p>
+    <p><b>This is not financial advice.</b> It does not predict future prices. All logic is deterministic and disclosed above &mdash; nothing here is generated by an AI model.</p>
+  </div>
+
+  <div class="card">
+    <div class="section-title" style="cursor:pointer" onclick="document.getElementById('debugBox').style.display = document.getElementById('debugBox').style.display==='none' ? 'block' : 'none'">Show raw data (debug) &#9660;</div>
+    <pre id="debugBox" style="display:none; white-space:pre-wrap; word-break:break-all; font-size:11px; color:var(--muted); max-height:300px; overflow:auto; margin:0;">Load the page first, then open this.</pre>
+  </div>
+</div>
+
+<script>
+// ---- Embedded historical backtest results (1990-2026, n=438 months) ----
+const REGIMES = [
+  { key: 'Low',      label: 'Low risk',          range: 'VIX < 13.8',    min: 0,    max: 13.84, gold: 0.082, silver: 0.114 },
+  { key: 'BelowAvg', label: 'Below-average risk', range: 'VIX 13.8\u201317.5', min: 13.84, max: 17.45, gold: 0.436, silver: 1.011 },
+  { key: 'AboveAvg', label: 'Above-average risk', range: 'VIX 17.5\u201323.4', min: 17.45, max: 23.38, gold: 1.155, silver: 1.256 },
+  { key: 'High',     label: 'High risk',          range: 'VIX > 23.4',    min: 23.38, max: 9999,  gold: 0.681, silver: 0.746 },
+];
+const GS_RATIO_HIST = { mean: 70.00, median: 71.07 };
+const CONFIDENCE = {
+  gold: 'Low confidence: VIX changes explain ~1% of monthly gold return variance (r\u00b2=0.011, p=0.02 \u2014 real but small).',
+  silver: 'Very low confidence: no statistically significant relationship found between silver returns and VIX (p=0.91).',
+};
+
+function regimeForVix(vix) {
+  return REGIMES.find(r => vix >= r.min && vix < r.max) || REGIMES[0];
+}
+function leanBadge(pct, threshPos = 0.35, threshStrong = 0.9) {
+  if (pct >= threshStrong) return { label: 'Bullish', cls: 'pos' };
+  if (pct >= threshPos) return { label: 'Slightly bullish', cls: 'pos' };
+  if (pct > -threshPos) return { label: 'Neutral', cls: 'neu' };
+  if (pct > -threshStrong) return { label: 'Slightly bearish', cls: 'neg' };
+  return { label: 'Bearish', cls: 'neg' };
+}
+function fmtPct(x) { return (x >= 0 ? '+' : '') + x.toFixed(2) + '%'; }
+
+async function fetchJSON(url) {
+  const res = await fetch(url);
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+async function loadAll() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true; btn.textContent = 'Loading\u2026';
+  document.getElementById('warnBanner').style.display = 'none';
+  let warnings = [];
+
+  // --- 1. Gold/Silver spot + ratio ---
+  let gold = null, silver = null, ratio = null, updatedAt = null;
+  let goldMomentum = null, silverMomentum = null;
+  try {
+    const spot = await fetchJSON('https://xaus.com/api/v1/spot?compact=1');
+    gold = spot.spot_usd_oz;
+    silver = spot.silver_usd_oz;
+    ratio = spot.gold_silver_ratio;
+    updatedAt = spot.updated_at;
+  } catch (e) {
+    warnings.push('Could not load live gold/silver prices (' + e.message + ').');
+  }
+
+  try {
+    const hist = await fetchJSON('https://xaus.com/api/v1/history');
+    const pts = hist.points || [];
+    if (pts.length > 20) {
+      const last = pts[pts.length - 1].c;
+      const prior = pts[pts.length - 21].c;
+      goldMomentum = ((last - prior) / prior) * 100;
+    }
+  } catch (e) {
+    warnings.push('Could not load gold price history for momentum calculation.');
+  }
+
+  // --- 2. VIX + headlines (best effort; degrade gracefully if unavailable) ---
+  let vix = null, headlines = [];
+  let debugInfo = {};
+  try {
+    const fg = await fetchJSON('https://feargreedchart.com/api/?action=regime');
+    debugInfo.regime_response = fg;
+    if (fg && fg.current && typeof fg.current.vix === 'number') vix = fg.current.vix;
+  } catch (e) {
+    debugInfo.regime_error = e.message;
+    warnings.push('Live VIX feed unavailable right now \u2014 showing prices only, risk regime defaulted to "unknown."');
+  }
+  try {
+    const sc = await fetchJSON('https://feargreedchart.com/api/?action=all');
+    debugInfo.all_response = sc;
+    if (sc && Array.isArray(sc.headlines)) headlines = sc.headlines.slice(0, 5);
+    else if (sc && Array.isArray(sc.news)) headlines = sc.news.slice(0, 5);
+    if (vix === null && sc && sc.current && typeof sc.current.vix === 'number') vix = sc.current.vix;
+    if (vix === null && sc && sc.score && Array.isArray(sc.score.components)) {
+      const volComp = sc.score.components.find(c => c.name === 'VOLATILITY');
+      if (volComp && volComp.raw) {
+        const m = /VIX\s*([\d.]+)/.exec(volComp.raw);
+        if (m) vix = parseFloat(m[1]);
+      }
+    }
+  } catch (e) {
+    debugInfo.all_error = e.message;
+    warnings.push('Live headline feed unavailable right now.');
+  }
+  document.getElementById('debugBox').textContent = JSON.stringify(debugInfo, null, 2);
+
+  // --- Render stats ---
+  document.getElementById('goldPrice').textContent = gold ? '$' + gold.toFixed(2) : 'unavailable';
+  document.getElementById('silverPrice').textContent = silver ? '$' + silver.toFixed(2) : 'unavailable';
+  document.getElementById('ratioVal').textContent = ratio ? ratio.toFixed(1) : 'unavailable';
+  if (ratio) {
+    const dev = ((ratio - GS_RATIO_HIST.mean) / GS_RATIO_HIST.mean) * 100;
+    document.getElementById('ratioDelta').textContent =
+      (dev >= 0 ? '+' : '') + dev.toFixed(1) + '% vs. 1990\u20132026 mean (' + GS_RATIO_HIST.mean + ')';
+  }
+
+  const regime = vix ? regimeForVix(vix) : null;
+  document.getElementById('regimeVal').textContent = regime ? regime.label : 'unknown';
+  document.getElementById('vixVal').textContent = vix ? ('VIX ' + vix.toFixed(1)) : 'live VIX unavailable';
+
+  // --- Short-term leans ---
+  const shortGrid = document.getElementById('shortTermGrid');
+  shortGrid.innerHTML = '';
+  ['gold', 'silver'].forEach(metal => {
+    const regimeReturn = regime ? regime[metal] : 0;
+    const momentum = metal === 'gold' ? goldMomentum : null;
+    let combined = regimeReturn;
+    let reason = regime
+      ? `Historical mean monthly return in the "${regime.label}" regime (${regime.range}): ${fmtPct(regimeReturn)}.`
+      : 'Live risk regime unavailable \u2014 showing neutral placeholder.';
+    if (momentum !== null) {
+      reason += ` Last ~20 trading days: ${fmtPct(momentum)} momentum.`;
+      if ((momentum > 0) === (regimeReturn > 0)) combined = (regimeReturn + momentum / 4) / 1;
+    }
+    const lean = leanBadge(combined);
+    const div = document.createElement('div');
+    div.className = 'lean-card';
+    div.innerHTML = `<div class="metal">${metal}</div>
+      <span class="badge ${lean.cls}">${lean.label}</span>
+      <div class="reason">${reason}</div>
+      <div class="conf">${CONFIDENCE[metal]}</div>`;
+    shortGrid.appendChild(div);
+  });
+
+  // --- Long-term leans (gold/silver ratio mean-reversion) ---
+  const longGrid = document.getElementById('longTermGrid');
+  longGrid.innerHTML = '';
+  if (ratio) {
+    const dev = ((ratio - GS_RATIO_HIST.mean) / GS_RATIO_HIST.mean) * 100;
+    // If ratio is above historical mean, silver is "cheap" relative to gold (historically) -> silver slightly bullish, gold slightly bearish, and vice versa. Only flag if deviation is meaningful.
+    const goldLong = leanBadge(dev > 0 ? -Math.min(Math.abs(dev) / 15, 1) * 0.5 : Math.min(Math.abs(dev) / 15, 1) * 0.5, 0.2, 0.45);
+    const silverLong = leanBadge(dev > 0 ? Math.min(Math.abs(dev) / 15, 1) * 0.5 : -Math.min(Math.abs(dev) / 15, 1) * 0.5, 0.2, 0.45);
+    const reasonText = `Gold/silver ratio is currently ${ratio.toFixed(1)}, ${Math.abs(dev).toFixed(1)}% ${dev >= 0 ? 'above' : 'below'} its 1990\u20132026 mean of ${GS_RATIO_HIST.mean}. Historically, large deviations have tended to mean-revert, but this is a slow, unreliable signal over any specific horizon.`;
+    [['gold', goldLong], ['silver', silverLong]].forEach(([metal, lean]) => {
+      const div = document.createElement('div');
+      div.className = 'lean-card';
+      div.innerHTML = `<div class="metal">${metal}</div>
+        <span class="badge ${lean.cls}">${lean.label}</span>
+        <div class="reason">${reasonText}</div>
+        <div class="conf">Mean-reversion signals are directional hints only \u2014 no defined timeframe or reliability estimate.</div>`;
+      longGrid.appendChild(div);
+    });
+  } else {
+    longGrid.innerHTML = '<div class="reason">Ratio data unavailable right now.</div>';
+  }
+
+  // --- Regime bars ---
+  const barsEl = document.getElementById('regimeBars');
+  barsEl.innerHTML = '';
+  const maxAbs = Math.max(...REGIMES.flatMap(r => [Math.abs(r.gold), Math.abs(r.silver)]));
+  REGIMES.forEach(r => {
+    const isActive = regime && regime.key === r.key;
+    [['Gold', r.gold, 'gold'], ['Silver', r.silver, 'silver']].forEach(([label, val, cls]) => {
+      const row = document.createElement('div');
+      row.className = 'bar-row';
+      const widthPct = Math.max(4, (Math.abs(val) / maxAbs) * 100);
+      row.innerHTML = `<div class="name">${r.range}${isActive ? ' \u25c0' : ''} ${label}</div>
+        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${widthPct}%; opacity:${isActive ? 1 : 0.45}"></div></div>
+        <div class="bar-val">${fmtPct(val)}</div>`;
+      barsEl.appendChild(row);
+    });
+  });
+
+  // --- Headlines ---
+  const hEl = document.getElementById('headlinesList');
+  hEl.innerHTML = '';
+  if (headlines.length) {
+    headlines.forEach(h => {
+      const li = document.createElement('li');
+      li.innerHTML = `${h.title || h.headline || h}<div class="src">${h.source || ''}</div>`;
+      hEl.appendChild(li);
+    });
+  } else {
+    hEl.innerHTML = '<li class="loading">No live headline feed available right now \u2014 leans above are based on price/regime data only.</li>';
+  }
+
+  // --- Warnings + timestamp ---
+  if (warnings.length) {
+    document.getElementById('warnBanner').style.display = 'block';
+    document.getElementById('warnBanner').textContent = warnings.join(' ');
+  }
+  document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date().toLocaleString();
+  btn.disabled = false; btn.textContent = 'Refresh';
+}
+
+loadAll();
+</script>
+</body>
+</html>
