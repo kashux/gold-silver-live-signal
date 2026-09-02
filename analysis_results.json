@@ -1,0 +1,121 @@
+{
+  "gold_corr_vix_chg": 0.1032,
+  "silver_corr_vix_chg": 0.0051,
+  "gold_reg": {
+    "const": 0.00556,
+    "beta_vix_chg": 0.01716,
+    "p_beta": 0.02062,
+    "r2": 0.0107,
+    "n": 438
+  },
+  "silver_reg": {
+    "const": 0.00777,
+    "beta_vix_chg": 0.00162,
+    "p_beta": 0.91066,
+    "r2": 0.0,
+    "n": 438
+  },
+  "regime_thresholds": {
+    "0.25": 13.84,
+    "0.5": 17.45,
+    "0.75": 23.38
+  },
+  "regime_conditional_returns": {
+    "gold": {
+      "Low Risk (Q1)": {
+        "mean_monthly_ret_pct": 0.774,
+        "median_monthly_ret_pct": 0.339,
+        "pct_positive_months": 54.5,
+        "n": 110
+      },
+      "Below-Avg Risk (Q2)": {
+        "mean_monthly_ret_pct": 0.105,
+        "median_monthly_ret_pct": -0.29,
+        "pct_positive_months": 42.2,
+        "n": 109
+      },
+      "Above-Avg Risk (Q3)": {
+        "mean_monthly_ret_pct": 0.674,
+        "median_monthly_ret_pct": 0.0,
+        "pct_positive_months": 48.6,
+        "n": 109
+      },
+      "High Risk (Q4)": {
+        "mean_monthly_ret_pct": 0.801,
+        "median_monthly_ret_pct": 0.386,
+        "pct_positive_months": 52.7,
+        "n": 110
+      }
+    },
+    "silver": {
+      "Low Risk (Q1)": {
+        "mean_monthly_ret_pct": 0.943,
+        "median_monthly_ret_pct": 0.0,
+        "pct_positive_months": 45.5,
+        "n": 110
+      },
+      "Below-Avg Risk (Q2)": {
+        "mean_monthly_ret_pct": 0.192,
+        "median_monthly_ret_pct": 0.0,
+        "pct_positive_months": 37.6,
+        "n": 109
+      },
+      "Above-Avg Risk (Q3)": {
+        "mean_monthly_ret_pct": 1.146,
+        "median_monthly_ret_pct": 0.0,
+        "pct_positive_months": 49.5,
+        "n": 109
+      },
+      "High Risk (Q4)": {
+        "mean_monthly_ret_pct": 0.84,
+        "median_monthly_ret_pct": 0.0,
+        "pct_positive_months": 48.2,
+        "n": 110
+      }
+    }
+  },
+  "contemporaneous_regime_returns": {
+    "gold": {
+      "Low Risk (Q1)": {
+        "mean_monthly_ret_pct": 0.082,
+        "n": 110
+      },
+      "Below-Avg Risk (Q2)": {
+        "mean_monthly_ret_pct": 0.436,
+        "n": 108
+      },
+      "Above-Avg Risk (Q3)": {
+        "mean_monthly_ret_pct": 1.155,
+        "n": 110
+      },
+      "High Risk (Q4)": {
+        "mean_monthly_ret_pct": 0.681,
+        "n": 110
+      }
+    },
+    "silver": {
+      "Low Risk (Q1)": {
+        "mean_monthly_ret_pct": 0.114,
+        "n": 110
+      },
+      "Below-Avg Risk (Q2)": {
+        "mean_monthly_ret_pct": 1.011,
+        "n": 108
+      },
+      "Above-Avg Risk (Q3)": {
+        "mean_monthly_ret_pct": 1.256,
+        "n": 110
+      },
+      "High Risk (Q4)": {
+        "mean_monthly_ret_pct": 0.746,
+        "n": 110
+      }
+    }
+  },
+  "gold_silver_ratio": {
+    "current": 69.27,
+    "historical_mean": 70.0,
+    "historical_median": 71.07
+  },
+  "gs_ratio_corr_vix_level": -0.0442
+}
