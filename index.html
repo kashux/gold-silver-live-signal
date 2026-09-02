@@ -6,18 +6,22 @@
 <title>Gold &amp; Silver — Live Geopolitical Risk Signal</title>
 <style>
   :root {
-    --bg: #17140f;
-    --panel: #201b14;
-    --panel-2: #241f17;
-    --ink: #f1ead9;
-    --muted: #a89f8c;
-    --gold: #c9a227;
-    --gold-bright: #e8c34a;
-    --silver: #b7b7ae;
-    --border: #35291d;
-    --pos-bg: #16241d; --pos-ink: #7bc9a0; --pos-border: #274b39;
-    --neu-bg: #24211a; --neu-ink: #c9c0aa; --neu-border: #3a3427;
-    --neg-bg: #261614; --neg-ink: #d98b7c; --neg-border: #4a2b26;
+    --bg: #FBF7EE;
+    --panel: #FFFFFF;
+    --panel-2: #FFF9EC;
+    --ink: #2B2418;
+    --muted: #7A7160;
+    --gold: #C8931A;
+    --gold-bright: #E8A93A;
+    --gold-bg: #FFF3D9;
+    --silver: #6B7A8F;
+    --silver-bg: #EEF2F6;
+    --navy: #1F3A5F;
+    --border: #EDE2C8;
+    --pos-bg: #E4F8EE; --pos-ink: #1C8A54; --pos-border: #B7ECD1;
+    --neu-bg: #FFF6E0; --neu-ink: #9C7A17; --neu-border: #F3E3A8;
+    --neg-bg: #FDECEC; --neg-ink: #C13F3F; --neg-border: #F6C9C9;
+    --shadow: 0 2px 10px rgba(60, 45, 10, 0.06);
   }
   * { box-sizing: border-box; }
   body {
@@ -25,35 +29,59 @@
     font-family: -apple-system, "Segoe UI", Roboto, sans-serif;
     padding: 24px 16px 60px;
   }
-  .wrap { max-width: 780px; margin: 0 auto; }
+  .wrap { max-width: 800px; margin: 0 auto; }
+  .header-banner {
+    background: linear-gradient(135deg, var(--navy), #2C4C78);
+    border-radius: 16px; padding: 22px 24px; margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
   h1 {
     font-family: Georgia, "Iowan Old Style", serif;
-    font-weight: 400; font-size: 26px; margin: 0 0 4px;
+    font-weight: 400; font-size: 25px; margin: 0 0 6px; color: #FFF9EC;
   }
-  .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 20px; }
+  .subtitle { color: #C9D6E6; font-size: 13.5px; }
   .card {
     background: var(--panel); border: 1px solid var(--border);
-    border-radius: 12px; padding: 20px; margin-bottom: 16px;
+    border-radius: 16px; padding: 20px; margin-bottom: 16px;
+    box-shadow: var(--shadow);
   }
   .row { display: flex; gap: 12px; flex-wrap: wrap; }
-  .stat { flex: 1; min-width: 140px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; }
+  .stat { flex: 1; min-width: 140px; background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px; padding: 14px; }
   .stat .label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 6px; }
-  .stat .value { font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace; font-size: 20px; color: var(--gold-bright); }
+  .stat .value { font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace; font-size: 21px; color: var(--gold); font-weight: 700; }
   .stat .value.silver { color: var(--silver); }
   .stat .delta { font-size: 12px; color: var(--muted); margin-top: 4px; }
   .refresh-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   button {
-    background: var(--gold); color: #1a1508; border: none; border-radius: 8px;
-    padding: 10px 16px; font-size: 14px; font-weight: 600; cursor: pointer;
+    background: var(--gold-bright); color: #3A2A05; border: none; border-radius: 10px;
+    padding: 10px 18px; font-size: 14px; font-weight: 700; cursor: pointer;
+    box-shadow: 0 2px 6px rgba(200,147,26,0.35);
   }
   button:disabled { opacity: 0.5; cursor: default; }
   .updated { font-size: 12px; color: var(--muted); }
-  .section-title { font-size: 13px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin: 0 0 12px; }
+  .section-title { font-size: 14px; font-weight: 700; color: var(--navy); margin: 0 0 14px; display: flex; align-items: center; gap: 8px; }
+
+  /* Plain-language summary */
+  .summary-box {
+    border-radius: 14px; padding: 16px 18px; margin-bottom: 16px;
+    display: flex; align-items: flex-start; gap: 14px;
+  }
+  .summary-box.pos { background: var(--pos-bg); border: 1px solid var(--pos-border); }
+  .summary-box.neu { background: var(--neu-bg); border: 1px solid var(--neu-border); }
+  .summary-box.neg { background: var(--neg-bg); border: 1px solid var(--neg-border); }
+  .summary-icon { font-size: 28px; line-height: 1; flex-shrink: 0; }
+  .summary-title { font-weight: 700; font-size: 15px; margin-bottom: 4px; }
+  .summary-box.pos .summary-title { color: var(--pos-ink); }
+  .summary-box.neu .summary-title { color: var(--neu-ink); }
+  .summary-box.neg .summary-title { color: var(--neg-ink); }
+  .summary-text { font-size: 13.5px; color: var(--ink); line-height: 1.55; }
+  .summary-caveat { font-size: 11.5px; color: var(--muted); margin-top: 6px; font-style: italic; }
+
   .lean-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
   @media (max-width: 480px) { .lean-grid { grid-template-columns: 1fr; } }
-  .lean-card { border-radius: 10px; padding: 14px; border: 1px solid var(--border); background: var(--panel-2); }
-  .lean-card .metal { font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); margin-bottom: 8px; }
-  .badge { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 13px; font-weight: 600; border: 1px solid; }
+  .lean-card { border-radius: 12px; padding: 14px; border: 1px solid var(--border); background: var(--panel-2); }
+  .lean-card .metal { font-size: 13px; font-weight: 700; color: var(--navy); margin-bottom: 8px; display: flex; align-items: center; gap: 6px; }
+  .badge { display: inline-block; padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 700; border: 1px solid; }
   .badge.pos { background: var(--pos-bg); color: var(--pos-ink); border-color: var(--pos-border); }
   .badge.neu { background: var(--neu-bg); color: var(--neu-ink); border-color: var(--neu-border); }
   .badge.neg { background: var(--neg-bg); color: var(--neg-ink); border-color: var(--neg-border); }
@@ -61,71 +89,71 @@
   .conf { font-size: 11px; color: var(--muted); margin-top: 8px; font-style: italic; }
   .bars { margin-top: 10px; }
   .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
-  .bar-row .name { width: 100px; color: var(--muted); flex-shrink: 0; }
-  .bar-track { flex: 1; background: var(--panel-2); border-radius: 4px; height: 14px; position: relative; overflow: hidden; }
-  .bar-fill { height: 100%; border-radius: 4px; }
-  .bar-fill.gold { background: var(--gold); }
-  .bar-fill.silver { background: var(--silver); }
-  .bar-val { width: 46px; text-align: right; font-family: ui-monospace, monospace; color: var(--ink); }
-  .headlines { list-style: none; margin: 0; padding: 0; }
-  .headlines li { padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; color: var(--ink); }
-  .headlines li:last-child { border-bottom: none; }
-  .headlines .src { color: var(--muted); font-size: 11px; }
+  .bar-row .name { width: 110px; color: var(--muted); flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--silver-bg); border-radius: 6px; height: 14px; position: relative; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; }
+  .bar-fill.gold { background: linear-gradient(90deg, var(--gold), var(--gold-bright)); }
+  .bar-fill.silver { background: linear-gradient(90deg, #8592A3, var(--silver)); }
+  .bar-val { width: 50px; text-align: right; font-family: ui-monospace, monospace; color: var(--ink); font-weight: 600; }
   .footer-text { font-size: 12px; color: var(--muted); line-height: 1.6; }
   .footer-text b { color: var(--ink); }
-  .warn { background: var(--neg-bg); border: 1px solid var(--neg-border); color: var(--neg-ink); padding: 10px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px; display: none; }
+  .warn { background: var(--neg-bg); border: 1px solid var(--neg-border); color: var(--neg-ink); padding: 10px 14px; border-radius: 10px; font-size: 13px; margin-bottom: 16px; display: none; }
   .loading { color: var(--muted); font-size: 13px; }
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Gold &amp; silver: live geopolitical risk signal</h1>
-  <div class="subtitle">Historical-context tool, not a price prediction &mdash; backtested on monthly data, 1990&ndash;2026</div>
+  <div class="header-banner">
+    <h1>🥇🥈 Gold &amp; silver: live risk signal</h1>
+    <div class="subtitle">Historical-context tool, not a price prediction &mdash; backtested on monthly data, 1990&ndash;2026</div>
+  </div>
 
   <div id="warnBanner" class="warn"></div>
 
   <div class="refresh-row">
     <span class="updated" id="updatedAt">Loading live data&hellip;</span>
-    <button id="refreshBtn" onclick="loadAll()">Refresh</button>
+    <button id="refreshBtn" onclick="loadAll()">🔄 Refresh</button>
   </div>
 
   <div class="card">
     <div class="row" id="statRow">
-      <div class="stat"><div class="label">Gold spot</div><div class="value" id="goldPrice">&mdash;</div></div>
-      <div class="stat"><div class="label">Silver spot</div><div class="value silver" id="silverPrice">&mdash;</div></div>
-      <div class="stat"><div class="label">Gold/Silver ratio</div><div class="value" id="ratioVal">&mdash;</div><div class="delta" id="ratioDelta"></div></div>
-      <div class="stat"><div class="label">Risk regime (VIX)</div><div class="value" id="regimeVal">&mdash;</div><div class="delta" id="vixVal"></div></div>
+      <div class="stat"><div class="label">🥇 Gold spot</div><div class="value" id="goldPrice">&mdash;</div></div>
+      <div class="stat"><div class="label">🥈 Silver spot</div><div class="value silver" id="silverPrice">&mdash;</div></div>
+      <div class="stat"><div class="label">⚖️ Gold/Silver ratio</div><div class="value" id="ratioVal">&mdash;</div><div class="delta" id="ratioDelta"></div></div>
+      <div class="stat"><div class="label">🌡️ Risk regime</div><div class="value" id="regimeVal">&mdash;</div><div class="delta" id="vixVal"></div></div>
     </div>
   </div>
 
   <div class="card">
-    <div class="section-title">Short-term read (tactical, driven by current risk regime &amp; recent momentum)</div>
+    <div class="section-title">💬 Short-term, in plain terms</div>
+    <div id="shortSummary"></div>
     <div class="lean-grid" id="shortTermGrid"></div>
   </div>
 
   <div class="card">
-    <div class="section-title">Long-term read (positional, driven by gold/silver ratio vs. its historical norm)</div>
+    <div class="section-title">💬 Long-term, in plain terms</div>
+    <div id="longSummary"></div>
     <div class="lean-grid" id="longTermGrid"></div>
   </div>
 
   <div class="card">
-    <div class="section-title">Historical return by risk regime (1990&ndash;2026 backtest, your current regime highlighted)</div>
+    <div class="section-title">📊 Historical return by risk regime (your current regime highlighted)</div>
     <div class="bars" id="regimeBars"></div>
   </div>
 
   <div class="card">
-    <div class="section-title">What's driving today's sentiment read</div>
+    <div class="section-title">🔍 What's driving today's sentiment read</div>
     <div class="bars" id="componentsList"><div class="loading">Loading component breakdown&hellip;</div></div>
   </div>
 
   <div class="card footer-text">
-    <p><b>Data:</b> Gold/silver spot &amp; history from xaus.com (World Bank / market-sourced). VIX &amp; headlines from feargreedchart.com. Historical regime backtest: World Bank Commodity Markets + CBOE VIX, 1990&ndash;2026 (438 months), built independently for this project.</p>
-    <p><b>Explanatory power:</b> gold's monthly return has a statistically significant but small relationship with VIX changes (r&sup2; = 1.1%, p = 0.02); silver shows no statistically significant relationship (p = 0.91). Treat every lean below as a weak historical association, not a reliable trading signal.</p>
+    <p><b>Data:</b> Gold/silver spot &amp; history from xaus.com (World Bank / market-sourced). VIX &amp; sentiment components from feargreedchart.com. Historical regime backtest: World Bank Commodity Markets + CBOE VIX, 1990&ndash;2026 (438 months), built independently for this project.</p>
+    <p><b>Explanatory power:</b> gold's monthly return has a statistically significant but small relationship with VIX changes (r&sup2; = 1.1%, p = 0.02); silver shows no statistically significant relationship (p = 0.91). Treat every lean on this page as a weak historical association, not a reliable trading signal.</p>
     <p><b>This is not financial advice.</b> It does not predict future prices. All logic is deterministic and disclosed above &mdash; nothing here is generated by an AI model.</p>
   </div>
 
   <div class="card">
-    <div class="section-title" style="cursor:pointer" onclick="document.getElementById('debugBox').style.display = document.getElementById('debugBox').style.display==='none' ? 'block' : 'none'">Show raw data (debug) &#9660;</div>
+    <div class="section-title" style="cursor:pointer" onclick="document.getElementById('debugBox').style.display = document.getElementById('debugBox').style.display==='none' ? 'block' : 'none'">🛠️ Show raw data (debug)</div>
     <pre id="debugBox" style="display:none; white-space:pre-wrap; word-break:break-all; font-size:11px; color:var(--muted); max-height:300px; overflow:auto; margin:0;">Load the page first, then open this.</pre>
   </div>
 </div>
@@ -162,21 +190,30 @@ async function fetchJSON(url) {
   return res.json();
 }
 
+function plainSummary(cls, icon, title, text, caveat) {
+  return `<div class="summary-box ${cls}">
+    <div class="summary-icon">${icon}</div>
+    <div>
+      <div class="summary-title">${title}</div>
+      <div class="summary-text">${text}</div>
+      <div class="summary-caveat">${caveat}</div>
+    </div>
+  </div>`;
+}
+
 async function loadAll() {
   const btn = document.getElementById('refreshBtn');
   btn.disabled = true; btn.textContent = 'Loading\u2026';
   document.getElementById('warnBanner').style.display = 'none';
   let warnings = [];
 
-  // --- 1. Gold/Silver spot + ratio ---
-  let gold = null, silver = null, ratio = null, updatedAt = null;
-  let goldMomentum = null, silverMomentum = null;
+  let gold = null, silver = null, ratio = null;
+  let goldMomentum = null;
   try {
     const spot = await fetchJSON('https://xaus.com/api/v1/spot?compact=1');
     gold = spot.spot_usd_oz;
     silver = spot.silver_usd_oz;
     ratio = spot.gold_silver_ratio;
-    updatedAt = spot.updated_at;
   } catch (e) {
     warnings.push('Could not load live gold/silver prices (' + e.message + ').');
   }
@@ -193,7 +230,6 @@ async function loadAll() {
     warnings.push('Could not load gold price history for momentum calculation.');
   }
 
-  // --- 2. VIX + headlines (best effort; degrade gracefully if unavailable) ---
   let vix = null, components = [];
   let debugInfo = {};
   try {
@@ -208,16 +244,13 @@ async function loadAll() {
     const sc = await fetchJSON('https://feargreedchart.com/api/?action=all');
     debugInfo.all_response = sc;
     if (vix === null && sc && sc.current && typeof sc.current.vix === 'number') vix = sc.current.vix;
-    if (sc && sc.score && Array.isArray(sc.score.components)) {
-      components = sc.score.components;
-    }
+    if (sc && sc.score && Array.isArray(sc.score.components)) components = sc.score.components;
   } catch (e) {
     debugInfo.all_error = e.message;
     warnings.push('Live sentiment breakdown unavailable right now.');
   }
   document.getElementById('debugBox').textContent = JSON.stringify(debugInfo, null, 2);
 
-  // --- Render stats ---
   document.getElementById('goldPrice').textContent = gold ? '$' + gold.toFixed(2) : 'unavailable';
   document.getElementById('silverPrice').textContent = silver ? '$' + silver.toFixed(2) : 'unavailable';
   document.getElementById('ratioVal').textContent = ratio ? ratio.toFixed(1) : 'unavailable';
@@ -231,9 +264,10 @@ async function loadAll() {
   document.getElementById('regimeVal').textContent = regime ? regime.label : 'unknown';
   document.getElementById('vixVal').textContent = vix ? ('VIX ' + vix.toFixed(1)) : 'live VIX unavailable';
 
-  // --- Short-term leans ---
+  // --- Short-term leans + plain summary ---
   const shortGrid = document.getElementById('shortTermGrid');
   shortGrid.innerHTML = '';
+  const shortLeans = {};
   ['gold', 'silver'].forEach(metal => {
     const regimeReturn = regime ? regime[metal] : 0;
     const momentum = metal === 'gold' ? goldMomentum : null;
@@ -246,34 +280,68 @@ async function loadAll() {
       if ((momentum > 0) === (regimeReturn > 0)) combined = (regimeReturn + momentum / 4) / 1;
     }
     const lean = leanBadge(combined);
+    shortLeans[metal] = lean;
+    const icon = metal === 'gold' ? '\ud83e\udd47' : '\ud83e\udd48';
     const div = document.createElement('div');
     div.className = 'lean-card';
-    div.innerHTML = `<div class="metal">${metal}</div>
+    div.innerHTML = `<div class="metal">${icon} ${metal}</div>
       <span class="badge ${lean.cls}">${lean.label}</span>
       <div class="reason">${reason}</div>
       <div class="conf">${CONFIDENCE[metal]}</div>`;
     shortGrid.appendChild(div);
   });
+  {
+    const g = shortLeans.gold, s = shortLeans.silver;
+    const bothPos = g.cls === 'pos' && s.cls === 'pos';
+    const bothNeg = g.cls === 'neg' && s.cls === 'neg';
+    let cls = 'neu', icon = '\u2696\ufe0f', title = 'No strong lean either way';
+    let text = `Right now, both gold and silver show a roughly neutral short-term historical pattern. There's no clear tilt toward buying or avoiding either metal based on current risk conditions alone.`;
+    if (bothPos) {
+      cls = 'pos'; icon = '\ud83d\udcc8';
+      title = 'Mildly positive lean for both metals';
+      text = `Current market conditions (${regime ? regime.label.toLowerCase() : 'today\u2019s regime'}) have historically lined up with small average gains for both gold and silver over the following month. This is a mild, low-confidence pattern \u2014 not a strong buy signal.`;
+    } else if (bothNeg) {
+      cls = 'neg'; icon = '\ud83d\udcc9';
+      title = 'Mildly negative lean for both metals';
+      text = `Current market conditions have historically lined up with weaker average performance for both metals over the following month. This is a mild, low-confidence pattern \u2014 not a signal to sell.`;
+    } else if (g.cls !== s.cls) {
+      cls = 'neu'; icon = '\u2696\ufe0f';
+      title = 'Gold and silver point in different directions';
+      text = `Gold looks "${g.label.toLowerCase()}" and silver looks "${s.label.toLowerCase()}" right now based on historical patterns \u2014 they're not moving together in this read, which itself is informative (they don't always react the same way to the same conditions).`;
+    }
+    document.getElementById('shortSummary').innerHTML = plainSummary(cls, icon, title, text,
+      'This reflects weak historical averages, not a prediction of what will happen next \u2014 see the confidence notes on each card below.');
+  }
 
-  // --- Long-term leans (gold/silver ratio mean-reversion) ---
+  // --- Long-term leans + plain summary ---
   const longGrid = document.getElementById('longTermGrid');
   longGrid.innerHTML = '';
   if (ratio) {
     const dev = ((ratio - GS_RATIO_HIST.mean) / GS_RATIO_HIST.mean) * 100;
-    // If ratio is above historical mean, silver is "cheap" relative to gold (historically) -> silver slightly bullish, gold slightly bearish, and vice versa. Only flag if deviation is meaningful.
     const goldLong = leanBadge(dev > 0 ? -Math.min(Math.abs(dev) / 15, 1) * 0.5 : Math.min(Math.abs(dev) / 15, 1) * 0.5, 0.2, 0.45);
     const silverLong = leanBadge(dev > 0 ? Math.min(Math.abs(dev) / 15, 1) * 0.5 : -Math.min(Math.abs(dev) / 15, 1) * 0.5, 0.2, 0.45);
     const reasonText = `Gold/silver ratio is currently ${ratio.toFixed(1)}, ${Math.abs(dev).toFixed(1)}% ${dev >= 0 ? 'above' : 'below'} its 1990\u20132026 mean of ${GS_RATIO_HIST.mean}. Historically, large deviations have tended to mean-revert, but this is a slow, unreliable signal over any specific horizon.`;
-    [['gold', goldLong], ['silver', silverLong]].forEach(([metal, lean]) => {
+    [['gold', goldLong, '\ud83e\udd47'], ['silver', silverLong, '\ud83e\udd48']].forEach(([metal, lean, icon]) => {
       const div = document.createElement('div');
       div.className = 'lean-card';
-      div.innerHTML = `<div class="metal">${metal}</div>
+      div.innerHTML = `<div class="metal">${icon} ${metal}</div>
         <span class="badge ${lean.cls}">${lean.label}</span>
         <div class="reason">${reasonText}</div>
         <div class="conf">Mean-reversion signals are directional hints only \u2014 no defined timeframe or reliability estimate.</div>`;
       longGrid.appendChild(div);
     });
+    let cls = 'neu', icon = '\u2696\ufe0f', title = 'Ratio is close to its historical average';
+    let text = `The gold/silver ratio (${ratio.toFixed(1)}) is close to where it's typically sat since 1990, so there's no strong long-term case, on this measure alone, for favoring one metal over the other right now.`;
+    if (Math.abs(dev) > 15) {
+      const cheapMetal = dev > 0 ? 'silver' : 'gold';
+      cls = 'pos'; icon = '\ud83d\udd0d';
+      title = `Ratio is notably ${dev > 0 ? 'high' : 'low'} vs. history`;
+      text = `The gold/silver ratio is meaningfully ${dev > 0 ? 'above' : 'below'} its long-run average, which has historically been followed by a slow drift back toward normal \u2014 a pattern some see as ${cheapMetal} being relatively cheap right now compared to the other metal. This is a slow-moving, low-reliability signal, not a timing tool.`;
+    }
+    document.getElementById('longSummary').innerHTML = plainSummary(cls, icon, title, text,
+      'Mean-reversion is a real historical pattern in this data, but it offers no guarantee and no specific timeframe.');
   } else {
+    document.getElementById('longSummary').innerHTML = '';
     longGrid.innerHTML = '<div class="reason">Ratio data unavailable right now.</div>';
   }
 
@@ -283,7 +351,7 @@ async function loadAll() {
   const maxAbs = Math.max(...REGIMES.flatMap(r => [Math.abs(r.gold), Math.abs(r.silver)]));
   REGIMES.forEach(r => {
     const isActive = regime && regime.key === r.key;
-    [['Gold', r.gold, 'gold'], ['Silver', r.silver, 'silver']].forEach(([label, val, cls]) => {
+    [['\ud83e\udd47 Gold', r.gold, 'gold'], ['\ud83e\udd48 Silver', r.silver, 'silver']].forEach(([label, val, cls]) => {
       const row = document.createElement('div');
       row.className = 'bar-row';
       const widthPct = Math.max(4, (Math.abs(val) / maxAbs) * 100);
@@ -294,7 +362,7 @@ async function loadAll() {
     });
   });
 
-  // --- Component breakdown (replaces headlines, which this API doesn't provide) ---
+  // --- Component breakdown ---
   const cEl = document.getElementById('componentsList');
   cEl.innerHTML = '';
   if (components.length) {
@@ -302,11 +370,11 @@ async function loadAll() {
       const row = document.createElement('div');
       row.className = 'bar-row';
       row.innerHTML = `<div class="name">${c.name}</div>
-        <div class="bar-track"><div class="bar-fill gold" style="width:${c.val}%; opacity:0.8"></div></div>
+        <div class="bar-track"><div class="bar-fill gold" style="width:${c.val}%; opacity:0.85"></div></div>
         <div class="bar-val">${c.val}/100</div>`;
       cEl.appendChild(row);
       const sub = document.createElement('div');
-      sub.style.cssText = 'font-size:11px;color:var(--muted);margin:-2px 0 8px 108px;';
+      sub.style.cssText = 'font-size:11px;color:var(--muted);margin:-2px 0 8px 118px;';
       sub.textContent = c.desc + ': ' + c.raw;
       cEl.appendChild(sub);
     });
@@ -314,13 +382,12 @@ async function loadAll() {
     cEl.innerHTML = '<div class="reason">Live sentiment breakdown unavailable right now.</div>';
   }
 
-  // --- Warnings + timestamp ---
   if (warnings.length) {
     document.getElementById('warnBanner').style.display = 'block';
     document.getElementById('warnBanner').textContent = warnings.join(' ');
   }
   document.getElementById('updatedAt').textContent = 'Last updated: ' + new Date().toLocaleString();
-  btn.disabled = false; btn.textContent = 'Refresh';
+  btn.disabled = false; btn.textContent = '\ud83d\udd04 Refresh';
 }
 
 loadAll();
