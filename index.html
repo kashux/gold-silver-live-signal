@@ -291,7 +291,7 @@ async function loadAll() {
     warnings.push('Could not load live gold/silver prices (' + e.message + ').');
   }
   try {
-    const ibjaGold = await fetchJSON('https://ibja-api.vercel.app/latest');
+    const ibjaGold = await fetchJSON('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://ibja-api.vercel.app/latest'));
     debugInfo.ibja_gold_response = ibjaGold;
     indiaGold10g = parseFloat(ibjaGold.lblGold999_PM || ibjaGold.lblGold999_AM);
   } catch (e) {
@@ -299,7 +299,7 @@ async function loadAll() {
     warnings.push('Live India gold rate (IBJA) unavailable right now.');
   }
   try {
-    const ibjaSilver = await fetchJSON('https://ibja-api.vercel.app/silver/latest');
+    const ibjaSilver = await fetchJSON('https://api.allorigins.win/raw?url=' + encodeURIComponent('https://ibja-api.vercel.app/silver/latest'));
     debugInfo.ibja_silver_response = ibjaSilver;
     indiaSilverKg = parseFloat(ibjaSilver.lblSilver999_PM || ibjaSilver.lblSilver999_AM);
   } catch (e) {
