@@ -100,6 +100,9 @@
   .badge.neg { background: var(--neg-bg); color: var(--neg-ink); border-color: var(--neg-border); }
   .reason { font-size: 12.5px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
   .conf { font-size: 11px; color: var(--muted); margin-top: 8px; font-style: italic; }
+  .tech-details { margin-top: 8px; }
+  .tech-details summary { font-size: 11px; color: var(--gold); cursor: pointer; font-weight: 600; user-select: none; }
+  .tech-details .tech-body { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; font-family: ui-monospace, monospace; background: var(--silver-bg); border-radius: 6px; padding: 8px 10px; }
   .bars { margin-top: 10px; }
   .bar-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 12px; }
   .bar-row .name { width: 110px; color: var(--muted); flex-shrink: 0; }
@@ -233,6 +236,10 @@ const GS_RATIO_HIST = { mean: 70.00, median: 71.07 };
 const CONFIDENCE = {
   gold: 'Low confidence: VIX changes explain ~1% of monthly gold return variance (r\u00b2=0.011, p=0.02 \u2014 real but small).',
   silver: 'Very low confidence: no statistically significant relationship found between silver returns and VIX (p=0.91).',
+};
+const CONFIDENCE_PLAIN = {
+  gold: "This pattern is real, but weak \u2014 market mood only explains a tiny sliver of what actually moves gold's price. Treat it as a gentle hint, not a rule.",
+  silver: "This pattern isn't reliable at all \u2014 in the data, silver's price didn't consistently move with market mood one way or the other.",
 };
 const OZ_TO_GRAM = 31.1035;
 
@@ -376,22 +383,35 @@ function render(d) {
   const shortGrid = document.getElementById('shortTermGrid');
   shortGrid.innerHTML = '';
   const shortLeans = {};
+  const CALM_PLAIN = {
+    Low: "Markets are very calm right now.",
+    BelowAvg: "Markets are fairly calm right now.",
+    AboveAvg: "Markets are a bit on edge right now.",
+    High: "Markets are quite fearful right now.",
+  };
   ['gold', 'silver'].forEach(metal => {
     const regimeReturn = regime ? regime[metal] : 0;
     const momentum = metal === 'gold' ? goldMomentum : null;
     let combined = regimeReturn;
-    let reason = regime ? `Historical mean monthly return in the "${regime.label}" regime (${regime.range}): ${fmtPct(regimeReturn)}.` : 'Live risk regime unavailable \u2014 showing neutral placeholder.';
+    const metalName = metal === 'gold' ? 'Gold' : 'Silver';
+    let plain = regime
+      ? `${CALM_PLAIN[regime.key]} In similar calm/fearful periods in the past, ${metalName.toLowerCase()} tended to move ${regimeReturn >= 0 ? 'up' : 'down'} a little over the following month.`
+      : `We couldn't read today's market mood, so this is a neutral placeholder.`;
     if (momentum !== null) {
-      reason += ` Last ~20 trading days: ${fmtPct(momentum)} momentum.`;
+      plain += ` ${metalName} has also been trending ${momentum >= 0 ? 'up' : 'down'} lately.`;
       if ((momentum > 0) === (regimeReturn > 0)) combined = (regimeReturn + momentum / 4) / 1;
     }
+    const techDetail = (regime ? `Historical mean monthly return in the "${regime.label}" regime (${regime.range}): ${fmtPct(regimeReturn)}.` : '') +
+      (momentum !== null ? ` Last ~20 trading days: ${fmtPct(momentum)} momentum.` : '');
     const lean = leanBadge(combined);
     shortLeans[metal] = lean;
     const icon = metal === 'gold' ? '\ud83e\udd47' : '\ud83e\udd48';
     const div = document.createElement('div');
     div.className = 'lean-card';
     div.innerHTML = `<div class="metal">${icon} ${metal}</div><span class="badge ${lean.cls}">${lean.label}</span>
-      <div class="reason">${reason}</div><div class="conf">${CONFIDENCE[metal]}</div>`;
+      <div class="reason">${plain}</div>
+      <div class="conf">${CONFIDENCE_PLAIN[metal]}</div>
+      <details class="tech-details"><summary>Show the numbers</summary><div class="tech-body">${techDetail}<br>${CONFIDENCE[metal]}</div></details>`;
     shortGrid.appendChild(div);
   });
   {
@@ -399,18 +419,18 @@ function render(d) {
     const bothPos = g.cls === 'pos' && s.cls === 'pos';
     const bothNeg = g.cls === 'neg' && s.cls === 'neg';
     let cls = 'neu', icon = '\u2696\ufe0f', title = 'No strong lean either way';
-    let text = `Right now, both gold and silver show a roughly neutral short-term historical pattern. No clear tilt toward buying or avoiding either metal based on current risk conditions alone.`;
+    let text = `Gold and silver both look pretty flat right now \u2014 nothing in recent conditions points strongly toward either buying or avoiding them.`;
     if (bothPos) {
-      cls = 'pos'; icon = '\ud83d\udcc8'; title = 'Mildly positive lean for both metals';
-      text = `Current market conditions (${regime ? regime.label.toLowerCase() : 'today\u2019s regime'}) have historically lined up with small average gains for both gold and silver over the following month. Mild, low-confidence pattern \u2014 not a strong buy signal.`;
+      cls = 'pos'; icon = '\ud83d\udcc8'; title = 'A small positive hint for both metals';
+      text = `Today's market mood has, in the past, come with small average gains for both gold and silver over the next month. It's a gentle hint, not a strong signal \u2014 think of it more like a slight tailwind than a green light.`;
     } else if (bothNeg) {
-      cls = 'neg'; icon = '\ud83d\udcc9'; title = 'Mildly negative lean for both metals';
-      text = `Current market conditions have historically lined up with weaker average performance for both metals over the following month. Mild, low-confidence pattern \u2014 not a signal to sell.`;
+      cls = 'neg'; icon = '\ud83d\udcc9'; title = 'A small negative hint for both metals';
+      text = `Today's market mood has, in the past, come with slightly weaker performance for both metals over the next month. It's a gentle hint, not a strong signal \u2014 more like a slight headwind than a red light.`;
     } else if (g.cls !== s.cls) {
-      cls = 'neu'; icon = '\u2696\ufe0f'; title = 'Gold and silver point in different directions';
-      text = `Gold looks "${g.label.toLowerCase()}" and silver looks "${s.label.toLowerCase()}" right now \u2014 they're not moving together in this read, which is itself informative.`;
+      cls = 'neu'; icon = '\u2696\ufe0f'; title = 'Gold and silver disagree right now';
+      text = `Gold looks "${g.label.toLowerCase()}" while silver looks "${s.label.toLowerCase()}" \u2014 they're pulling in different directions today, which itself is worth noticing.`;
     }
-    document.getElementById('shortSummary').innerHTML = plainSummary(cls, icon, title, text, 'Reflects weak historical averages, not a prediction \u2014 see confidence notes below.');
+    document.getElementById('shortSummary').innerHTML = plainSummary(cls, icon, title, text, 'Based on weak historical patterns, not a forecast \u2014 tap "Show the numbers" on each card for the exact stats.');
   }
 
   const longGrid = document.getElementById('longTermGrid');
@@ -419,17 +439,21 @@ function render(d) {
     const dev = ((ratio - GS_RATIO_HIST.mean) / GS_RATIO_HIST.mean) * 100;
     const goldLong = leanBadge(dev > 0 ? -Math.min(Math.abs(dev) / 15, 1) * 0.5 : Math.min(Math.abs(dev) / 15, 1) * 0.5, 0.2, 0.45);
     const silverLong = leanBadge(dev > 0 ? Math.min(Math.abs(dev) / 15, 1) * 0.5 : -Math.min(Math.abs(dev) / 15, 1) * 0.5, 0.2, 0.45);
-    const reasonText = `Gold/silver ratio is currently ${ratio.toFixed(1)}, ${Math.abs(dev).toFixed(1)}% ${dev >= 0 ? 'above' : 'below'} its 1990\u20132026 mean of ${GS_RATIO_HIST.mean}. Large deviations have historically tended to mean-revert, but slowly and unreliably.`;
+    const plainRatio = `Right now it takes about ${ratio.toFixed(0)} ounces of silver to equal the value of one ounce of gold. That's ${Math.abs(dev).toFixed(0)}% ${dev >= 0 ? 'more' : 'fewer'} than the long-term average, so ${dev >= 0 ? 'silver looks relatively cheap next to gold' : 'gold looks relatively cheap next to silver'} compared to how they've usually traded since 1990.`;
+    const techRatio = `Gold/silver ratio is currently ${ratio.toFixed(1)}, ${Math.abs(dev).toFixed(1)}% ${dev >= 0 ? 'above' : 'below'} its 1990\u20132026 mean of ${GS_RATIO_HIST.mean}. Large deviations have historically tended to mean-revert, but slowly and unreliably.`;
     [['gold', goldLong, '\ud83e\udd47'], ['silver', silverLong, '\ud83e\udd48']].forEach(([metal, lean, icon]) => {
       const div = document.createElement('div');
       div.className = 'lean-card';
       div.innerHTML = `<div class="metal">${icon} ${metal}</div><span class="badge ${lean.cls}">${lean.label}</span>
-        <div class="reason">${reasonText}</div><div class="conf">Mean-reversion signals are directional hints only \u2014 no defined timeframe.</div>`;
+        <div class="reason">${plainRatio}</div>
+        <div class="conf">This kind of gap has slowly closed before, but there's no guarantee or fixed timeline.</div>
+        <details class="tech-details"><summary>Show the numbers</summary><div class="tech-body">${techRatio}</div></details>`;
       longGrid.appendChild(div);
     });
     let cls = 'neu', icon = '\u2696\ufe0f', title = 'Ratio is close to its historical average';
     let text = `The gold/silver ratio (${ratio.toFixed(1)}) is close to where it's typically sat since 1990, so there's no strong long-term case, on this measure alone, for favoring one metal over the other.`;
     if (Math.abs(dev) > 15) {
+
       const cheapMetal = dev > 0 ? 'silver' : 'gold';
       cls = 'pos'; icon = '\ud83d\udd0d'; title = `Ratio is notably ${dev > 0 ? 'high' : 'low'} vs. history`;
       text = `The ratio is meaningfully ${dev > 0 ? 'above' : 'below'} its long-run average, which has historically drifted back toward normal over time \u2014 some read this as ${cheapMetal} being relatively cheap right now. Slow-moving, low-reliability signal.`;
@@ -458,6 +482,13 @@ function render(d) {
 
   const cEl = document.getElementById('componentsList');
   cEl.innerHTML = '';
+  const COMPONENT_PLAIN = {
+    'VOLATILITY': "How much prices have been swinging up and down lately.",
+    'MOMENTUM': "Whether the overall stock market has been trending up or down.",
+    'PUT/CALL': "Whether investors are betting more on prices falling or rising.",
+    'SAFE HAVEN': "Whether money is flowing into 'safer' investments like bonds.",
+    'JUNK BONDS': "Whether investors feel comfortable taking on riskier bets right now.",
+  };
   if (components.length) {
     components.forEach(c => {
       const row = document.createElement('div');
@@ -465,9 +496,13 @@ function render(d) {
       row.innerHTML = `<div class="name">${c.name}</div><div class="bar-track"><div class="bar-fill gold" style="width:${c.val}%; opacity:0.85"></div></div><div class="bar-val">${c.val}/100</div>`;
       cEl.appendChild(row);
       const sub = document.createElement('div');
-      sub.style.cssText = 'font-size:11px;color:var(--muted);margin:-2px 0 8px 118px;';
-      sub.textContent = c.desc + ': ' + c.raw;
+      sub.style.cssText = 'font-size:11.5px;color:var(--ink);margin:-2px 0 2px 118px;';
+      sub.textContent = COMPONENT_PLAIN[c.name] || c.desc;
       cEl.appendChild(sub);
+      const tech = document.createElement('div');
+      tech.style.cssText = 'font-size:10.5px;color:var(--muted);margin:0 0 10px 118px;font-family:ui-monospace,monospace;';
+      tech.textContent = c.desc + ': ' + c.raw;
+      cEl.appendChild(tech);
     });
   } else {
     cEl.innerHTML = '<div class="reason">Live sentiment breakdown unavailable right now.</div>';
