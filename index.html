@@ -153,7 +153,7 @@
     </div>
 
     <div class="card">
-      <div class="india-note" id="indiaPriceNote">💡 Gold and silver prices below are the international spot price adjusted for India's import duty and GST (a ~12.6% premium, calibrated against a real observed comparison) &mdash; not a live scrape of a specific jeweller's rate. Gold is per 10g, silver is per kg (standard Indian convention). Duty policy can change; check a source like ClearTax or Goodreturns if you need the exact rate for a purchase decision. A specific jeweller's final bill will still add making charges and point-of-sale GST on top of this.</div>
+      <div class="india-note" id="indiaPriceNote">💡 Gold and silver prices below are the international spot price adjusted for India's actual import duty (15% BCD+AIDC) and GST (~18.45% combined premium) &mdash; not a live scrape of a specific jeweller's rate. Gold is per 10g, silver is per kg (standard Indian convention). Duty policy can change; check a source like ClearTax or Goodreturns if you need the exact rate for a purchase decision. A specific jeweller's final bill will still add making charges and point-of-sale GST on top of this.</div>
       <div class="row" id="statRow">
         <div class="stat"><div class="label" id="goldLabel">🥇 Gold spot</div><div class="value" id="goldPrice">&mdash;</div></div>
         <div class="stat"><div class="label" id="silverLabel">🥈 Silver spot</div><div class="value silver" id="silverPrice">&mdash;</div></div>
@@ -314,15 +314,17 @@ async function loadAll() {
   } catch (e) {
     warnings.push('Could not load live gold/silver prices (' + e.message + ').');
   }
-  // India market rate = live international price × a duty+GST premium calibrated
-  // against a real observed comparison (India gold import duty was raised from
-  // 6% to 15% in May 2026, plus 3% GST; the theoretical stack is ~18.5%, but the
-  // empirically observed premium on 3 Sep 2026 was ~12.6%, which is what's used
-  // here since it reflects the real bullion-market pass-through rather than the
-  // theoretical maximum). This is a calibrated ESTIMATE, not a live scrape — duty
-  // policy can change again, so this multiplier should be periodically re-checked
-  // against a live source (e.g. ClearTax, Goodreturns) if exact precision matters.
-  const INDIA_PREMIUM_MULTIPLIER = 1.126;
+  // India market rate = live international price × India's actual published import
+  // duty + GST stack (10% Basic Customs Duty + 5% Agriculture Infrastructure and
+  // Development Cess = 15% total duty, raised from 6% in May 2026, plus 3% GST on
+  // the duty-loaded value: 1.15 × 1.03 = 1.1845). This is grounded in the official
+  // duty rate rather than a single noisy comparison, and was cross-checked against
+  // two independent dated sources (Bajaj Broking, 1 Sep 2026; Paytm, 4 Sep 2026),
+  // both of which implied a real-world premium in the 16-20% range, bracketing
+  // this figure. This is a calibrated ESTIMATE, not a live scrape — duty policy
+  // can change again, so re-check against a live source (ClearTax, Goodreturns)
+  // if exact precision matters for a purchase decision.
+  const INDIA_PREMIUM_MULTIPLIER = 1.1845;
   if (gold && fxInr) indiaGold10g = gold * fxInr / OZ_TO_GRAM * 10 * INDIA_PREMIUM_MULTIPLIER;
   if (silver && fxInr) indiaSilverKg = silver * fxInr / OZ_TO_GRAM * 1000 * INDIA_PREMIUM_MULTIPLIER;
   if (indiaGold10g && indiaSilverKg) {
