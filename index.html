@@ -153,7 +153,7 @@
     </div>
 
     <div class="card">
-      <div class="india-note" id="indiaPriceNote">💡 Gold and silver prices below are India's real bullion market rates from the <b>India Bullion &amp; Jewellers Association (IBJA)</b> &mdash; the reference rate jewellers price against &mdash; not a converted international price. Gold is per 10g, silver is per kg (standard Indian convention). A specific jeweller's final bill will still add making charges and point-of-sale GST on top. <span id="ibjaFallbackNote" style="display:none;">⚠️ IBJA feed unavailable right now &mdash; showing an international-spot estimate instead (marked *), which will run lower than the real Indian market rate.</span></div>
+      <div class="india-note" id="indiaPriceNote">💡 Gold and silver prices below are the international spot price adjusted for India's import duty and GST (a ~12.6% premium, calibrated against a real observed comparison) &mdash; not a live scrape of a specific jeweller's rate. Gold is per 10g, silver is per kg (standard Indian convention). Duty policy can change; check a source like ClearTax or Goodreturns if you need the exact rate for a purchase decision. A specific jeweller's final bill will still add making charges and point-of-sale GST on top of this.</div>
       <div class="row" id="statRow">
         <div class="stat"><div class="label" id="goldLabel">🥇 Gold spot</div><div class="value" id="goldPrice">&mdash;</div></div>
         <div class="stat"><div class="label" id="silverLabel">🥈 Silver spot</div><div class="value silver" id="silverPrice">&mdash;</div></div>
@@ -289,8 +289,8 @@ function setMarket(m) {
   document.getElementById('btnIndia').classList.toggle('active', m === 'india');
   document.getElementById('indiaPriceNote').style.display = m === 'india' ? 'block' : 'none';
   document.getElementById('indiaRegimeNote').style.display = m === 'india' ? 'block' : 'none';
-  document.getElementById('goldLabel').textContent = m === 'india' ? '🥇 Gold (IBJA)' : '🥇 Gold spot';
-  document.getElementById('silverLabel').textContent = m === 'india' ? '🥈 Silver (IBJA)' : '🥈 Silver spot';
+  document.getElementById('goldLabel').textContent = m === 'india' ? '🥇 Gold (est.)' : '🥇 Gold spot';
+  document.getElementById('silverLabel').textContent = m === 'india' ? '🥈 Silver (est.)' : '🥈 Silver spot';
   if (lastData) render(lastData);
 }
 
@@ -314,22 +314,17 @@ async function loadAll() {
   } catch (e) {
     warnings.push('Could not load live gold/silver prices (' + e.message + ').');
   }
-  try {
-    const ibjaGold = await fetchViaProxyChain('https://ibja-api.vercel.app/latest');
-    debugInfo.ibja_gold_response = ibjaGold;
-    indiaGold10g = parseFloat(ibjaGold.lblGold999_PM || ibjaGold.lblGold999_AM);
-  } catch (e) {
-    debugInfo.ibja_gold_error = e.message;
-    warnings.push('Live India gold rate (IBJA) unavailable right now.');
-  }
-  try {
-    const ibjaSilver = await fetchViaProxyChain('https://ibja-api.vercel.app/silver/latest');
-    debugInfo.ibja_silver_response = ibjaSilver;
-    indiaSilverKg = parseFloat(ibjaSilver.lblSilver999_PM || ibjaSilver.lblSilver999_AM);
-  } catch (e) {
-    debugInfo.ibja_silver_error = e.message;
-    warnings.push('Live India silver rate (IBJA) unavailable right now.');
-  }
+  // India market rate = live international price × a duty+GST premium calibrated
+  // against a real observed comparison (India gold import duty was raised from
+  // 6% to 15% in May 2026, plus 3% GST; the theoretical stack is ~18.5%, but the
+  // empirically observed premium on 3 Sep 2026 was ~12.6%, which is what's used
+  // here since it reflects the real bullion-market pass-through rather than the
+  // theoretical maximum). This is a calibrated ESTIMATE, not a live scrape — duty
+  // policy can change again, so this multiplier should be periodically re-checked
+  // against a live source (e.g. ClearTax, Goodreturns) if exact precision matters.
+  const INDIA_PREMIUM_MULTIPLIER = 1.126;
+  if (gold && fxInr) indiaGold10g = gold * fxInr / OZ_TO_GRAM * 10 * INDIA_PREMIUM_MULTIPLIER;
+  if (silver && fxInr) indiaSilverKg = silver * fxInr / OZ_TO_GRAM * 1000 * INDIA_PREMIUM_MULTIPLIER;
   if (indiaGold10g && indiaSilverKg) {
     indiaRatio = (indiaGold10g / 10) / (indiaSilverKg / 1000);
   }
@@ -374,15 +369,12 @@ function render(d) {
   let goldDisp = null, silverDisp = null, goldUnit = '', silverUnit = '', displayRatio = ratio;
   if (isIndia) {
     if (indiaGold10g) { goldDisp = indiaGold10g; goldUnit = ' /10g'; }
-    else if (gold && fxInr) { goldDisp = gold * fxInr / OZ_TO_GRAM * 10; goldUnit = ' /10g*'; }
     if (indiaSilverKg) { silverDisp = indiaSilverKg; silverUnit = ' /kg'; }
-    else if (silver && fxInr) { silverDisp = silver * fxInr / OZ_TO_GRAM * 1000; silverUnit = ' /kg*'; }
     displayRatio = indiaRatio || ratio;
   } else {
     goldDisp = gold; silverDisp = silver;
   }
   const currencySym = isIndia ? '\u20b9' : '$';
-  document.getElementById('ibjaFallbackNote').style.display = (isIndia && !indiaGold10g) ? 'inline' : 'none';
   document.getElementById('goldPrice').textContent = goldDisp != null ? currencySym + goldDisp.toLocaleString(undefined, {maximumFractionDigits: 0}) + goldUnit : 'unavailable';
   document.getElementById('silverPrice').textContent = silverDisp != null ? currencySym + silverDisp.toLocaleString(undefined, {maximumFractionDigits: 0}) + silverUnit : 'unavailable';
   document.getElementById('ratioVal').textContent = displayRatio ? displayRatio.toFixed(1) : 'unavailable';
